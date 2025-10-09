@@ -1,33 +1,30 @@
 package pieces;
 
+import board.Position;
+import java.util.List;
+
 public abstract class Piece {
-    protected int row, col;
-    protected String color;
+    protected String color;     // "white" or "black"
+    protected Position position; // e.g., E2
 
-    public Piece(int row, int col, String color) {
-        this.row = row;
-        this.col = col;
+    public Piece(String color, Position position) {
         this.color = color.toLowerCase();
+        this.position = position;
     }
 
-    public int getRow() { return row; }
-    public int getCol() { return col; }
-    public String getColor() { return color; }
+    // Returns a list of possible moves from the current position.
+    public abstract List<Position> possibleMoves();
 
-    public void setPosition(int row, int col) {
-        this.row = row;
-        this.col = col;
+    // Moves the piece to a new position.
+    public void move(Position newPosition) {
+        this.position = newPosition;
     }
-
-    public abstract void Move(int row, int col);
-
-    // 🔥 This is the important part:
-@Override
-public String toString() {
-    // color already normalized to lowercase in constructor
-    char c = color.charAt(0); // 'w' or 'b'
-    char p = Character.toUpperCase(getClass().getSimpleName().charAt(0)); // R, N, B, Q, K, P
-    return "" + c + p; // e.g., wP, bR
+    @Override
+    public String toString() {
+        String name = getClass().getSimpleName();
+        char letter = name.equals("Knight") ? 'N' : Character.toUpperCase(name.charAt(0));
+        char side = color.charAt(0); // 'w' or 'b'
+        return "" + side + letter;   // e.g., wP, bR
 }
 
 }

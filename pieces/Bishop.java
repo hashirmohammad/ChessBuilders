@@ -1,13 +1,16 @@
 package pieces;
 
-public class Bishop extends Piece {
+import board.Position;
+import java.util.ArrayList;
+import java.util.List;
 
-    public Bishop(int row, int col, String color) {
-        super(row, col, color); // pass color to the parent Piece class
+public class Bishop extends Piece {
+    public Bishop(String color, Position position) {
+        super(color, position);
     }
 
     @Override
-    public void Move(int row, int col) {
-        // TODO: add bishop movement logic later
+    public List<Position> possibleMoves() {
+        return new ArrayList<>();
     }
 }

@@ -1,13 +1,16 @@
 package pieces;
 
-public class Knight extends Piece {
+import board.Position;
+import java.util.ArrayList;
+import java.util.List;
 
-    public Knight(int row, int col, String color) {
-        super(row, col, color); // pass color to parent Piece
+public class Knight extends Piece {
+    public Knight(String color, Position position) {
+        super(color, position);
     }
 
     @Override
-    public void Move(int row, int col) {
-        // TODO: add knight movement logic later
+    public List<Position> possibleMoves() {
+        return new ArrayList<>();
     }
 }

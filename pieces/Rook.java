@@ -1,13 +1,16 @@
 package pieces;
 
-public class Rook extends Piece {
+import board.Position;
+import java.util.ArrayList;
+import java.util.List;
 
-    public Rook(int row, int col, String color) {
-        super(row, col, color); // pass color to Piece constructor
+public class Rook extends Piece {
+    public Rook(String color, Position position) {
+        super(color, position);
     }
 
     @Override
-    public void Move(int row, int col) {
-        // TODO: add rook movement logic later
+    public List<Position> possibleMoves() {
+        return new ArrayList<>();
     }
 }

@@ -1,13 +1,16 @@
 package pieces;
 
-public class Queen extends Piece {
+import board.Position;
+import java.util.ArrayList;
+import java.util.List;
 
-    public Queen(int row, int col, String color) {
-        super(row, col, color); // Pass color to parent constructor
+public class Queen extends Piece {
+    public Queen(String color, Position position) {
+        super(color, position);
     }
 
     @Override
-    public void Move(int row, int col) {
-        // TODO: add queen movement logic later
+    public List<Position> possibleMoves() {
+        return new ArrayList<>();
     }
 }
