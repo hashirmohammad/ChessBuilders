@@ -1,9 +1,11 @@
 public class board {
 
         private piece[][] grid = new piece[8][8];   
+        private String currentTurn;  // "W" or "B" to track whose turn it is
 
         public board() {
         initializeBoard();
+        currentTurn = "W";
         }
 
          private void initializeBoard() {
@@ -26,7 +28,17 @@ public class board {
             grid[6][6] = new pawn("P" , "W",6,6);
             grid[6][7] = new pawn("P" , "W",6,7);
          }
+    public piece[][] getGrid() {
+        return grid;
+    }
 
+    public piece getPieceAt(int row, int col) {
+        return grid[row][col];
+    }
+
+    public void setPieceAt(int row, int col, piece p) {
+        grid[row][col] = p;
+    }
       public void display(){
        System.out.print("   ");
         for (char c = 'A'; c <= 'H'; c++) {
@@ -66,15 +78,72 @@ public class board {
 
     return grid[row][col];
 }
+// Returns the current turn: "W" or "B"
+public String getCurrentTurn() {
+    return currentTurn;
+}
+
+// Attempts to move a piece and returns true if successful
+public boolean makeMove(int startRow, int startCol, int endRow, int endCol) {
+    piece selected = grid[startRow][startCol];
+
+    if (selected == null) {
+        System.out.println("No piece at that square.");
+        return false;
+    }
+
+    if (!selected.getColor().equals(currentTurn)) {
+        System.out.println("It's not " + (currentTurn.equals("W") ? "White" : "Black") + "'s turn!");
+        return false;
+    }
+
+    if (!selected.isValidMove(endRow, endCol, grid)) {
+        System.out.println("Invalid move for this piece.");
+        return false;
+    }
+
+    // Move piece
+    grid[endRow][endCol] = selected;
+    grid[startRow][startCol] = null;
+    selected.setPosition(endRow, endCol);
+
+    switchTurn();  // Switch turns
+    return true;
+}
+public void switchTurn() {
+    currentTurn = currentTurn.equals("W") ? "B" : "W";
+}
 
 
 
 
     public static void main(String[] args) {
-        board chessBoard = new board();
+    board chessBoard = new board();
+    player white = new player("W");
+    player black = new player("B");
+
+    // Assign pieces to players
+    piece[][] grid = chessBoard.getGrid();
+    for (int r = 0; r < 8; r++) {
+        for (int c = 0; c < 8; c++) {
+            if (grid[r][c] != null) {
+                if (grid[r][c].getColor().equals("W")) white.addPiece(grid[r][c]);
+                else black.addPiece(grid[r][c]);
+            }
+        }
+    }
+
+    // Game loop (simplified)
+    while (true) {
         chessBoard.display();
+        if (chessBoard.getCurrentTurn().equals("W")) white.makeMove(chessBoard);
+        else black.makeMove(chessBoard);
+    }
+}
+
+        }
+    
+
    
-}
-}
 
 
