@@ -1,22 +1,21 @@
 public abstract class Piece {
-    protected int col, row;  
+    protected int row, col;  
 
 
-    public Piece(int col, int row) {
-        this.row = col;
+    public Piece(int row, int col) {
         this.col = row;
-    }
-
-     public int getCol() {
-        return col;
+        this.row = col;
     }
 
     public int getRow() {
         return row;
     }
 
+     public int getCol() {
+        return col;
+    }
 
-    public void setPosition(int col, int row) {
+    public void setPosition(int row, int col) {
         this.row = row;
         this.col = col;
     }

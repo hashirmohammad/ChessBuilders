@@ -27,18 +27,22 @@ public void display() {
     // Top labels
     System.out.println("    A  B  C  D  E  F  G  H");
 
+    // Loop top (row 0) to bottom (row 7)
     for (int r = 0; r < 8; r++) {
-        int rank = 8 - r;
+        int rank = r + 1; // top row = 1, bottom row = 8
         System.out.print(rank + " ");
-        
+
         for (int c = 0; c < 8; c++) {
             System.out.print(" " + grid[r][c]);
         }
+
         System.out.println("  " + rank);
     }
 
     // Bottom labels
     System.out.println("    A  B  C  D  E  F  G  H");
 }
+
+
 }
 
