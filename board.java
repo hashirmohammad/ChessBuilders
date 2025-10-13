@@ -18,6 +18,16 @@ public class board {
             grid[1][5] = new pawn("P" , "B",1,5);
             grid[1][6] = new pawn("P" , "B",1,6);
             grid[1][7] = new pawn("P" , "B",1,7);
+            grid[0][0] = new rook("R" , "B",0,0);
+            grid[0][7] = new rook("R" , "B",0,7);
+            grid[0][2] = new bishop("B" , "B",0,2);
+            grid[0][5] = new bishop("B" , "B",0,5);
+            grid[0][1] = new knight("K", "B", 0, 1); 
+            grid[0][6] = new knight("K", "B", 0, 6); 
+            grid[0][3] = new queen("Q", "B", 0, 3); 
+
+
+
             //white
             grid[6][0] = new pawn("P" , "W",6,0);
             grid[6][1] = new pawn("P" , "W",6,1);
@@ -27,11 +37,25 @@ public class board {
             grid[6][5] = new pawn("P" , "W",6,5);
             grid[6][6] = new pawn("P" , "W",6,6);
             grid[6][7] = new pawn("P" , "W",6,7);
+            grid[7][0] = new rook("R" , "W",7,0);
+            grid[7][7] = new rook("R" , "W",7,7);
+            grid[7][2] = new bishop("B" , "W",7,2);
+            grid[7][5] = new bishop("B" , "W",7,5);
+            grid[7][1] = new knight("K", "W", 7, 1); 
+            grid[7][6] = new knight("K", "W", 7, 6); 
+            grid[7][3] = new queen("Q", "W", 7, 3); 
          }
     public piece[][] getGrid() {
         return grid;
     }
 
+<<<<<<< HEAD
+=======
+    public piece[][] getGrid() {
+        return grid;
+    }
+
+>>>>>>> Hashir
     public piece getPieceAt(int row, int col) {
         return grid[row][col];
     }
@@ -145,5 +169,9 @@ public void switchTurn() {
     
 
    
+<<<<<<< HEAD
+=======
+
+>>>>>>> Hashir
 
 

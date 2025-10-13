@@ -11,7 +11,7 @@ public class pawn extends piece{
         int startRow;
 
         // Determine movement direction and starting row
-        if (color.equalsIgnoreCase("white")) {
+        if (color.equalsIgnoreCase("w")) {
             direction = -1;  // white moves up (rows decrease)
             startRow = 6;
         } else {
