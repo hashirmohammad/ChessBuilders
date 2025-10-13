@@ -20,6 +20,8 @@ public class board {
             grid[1][7] = new pawn("P" , "B",1,7);
             grid[0][0] = new rook("R" , "B",0,0);
             grid[0][7] = new rook("R" , "B",0,7);
+            grid[0][1] = new bishop("B" , "B",0,1);
+            grid[0][6] = new bishop("B" , "B",0,6);
 
             //white
             grid[6][0] = new pawn("P" , "W",6,0);
@@ -32,6 +34,8 @@ public class board {
             grid[6][7] = new pawn("P" , "W",6,7);
             grid[7][0] = new rook("R" , "W",7,0);
             grid[7][7] = new rook("R" , "W",7,7);
+            grid[7][1] = new bishop("B" , "W",7,1);
+            grid[7][6] = new bishop("B" , "W",7,6);
          }
     public piece[][] getGrid() {
         return grid;
