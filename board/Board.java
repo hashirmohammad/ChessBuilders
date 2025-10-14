@@ -1,31 +1,25 @@
 package board;
 
-import pieces.Piece;
-import pieces.Pawn;
-import pieces.Rook;
-import pieces.Knight;
-import pieces.Bishop;
-import pieces.Queen;
-import pieces.King;
+import pieces.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Chess board holding an 8x8 grid of pieces.
- * Exposes: getPiece, movePiece, isCheck, isCheckmate, display.
- * Includes setupClassic() to place the standard starting position.
+ * Chessboard with an 8x8 grid of pieces plus basic move/capture logic.
  */
 public class Board {
 
-    // --- Attributes ---
-    private final Piece[][] grid = new Piece[8][8];          // 8x8 matrix of squares
-    private final List<Piece> captured = new ArrayList<>();  // list of captured pieces
+    /** 8x8 matrix holding the pieces (null if empty). */
+    private final Piece[][] grid = new Piece[8][8];
+
+    /** Captured pieces in play order. */
+    private final List<Piece> captured = new ArrayList<>();
 
     /** Color enum used by isCheck / isCheckmate. */
     public enum Color { WHITE, BLACK }
 
-    // --- Initialization helper (call this before playing) ---
+    /** Initializes the classic starting position. */
     public void setupClassic() {
         // clear
         for (int r = 0; r < 8; r++)
@@ -55,9 +49,11 @@ public class Board {
         grid[7][7] = new Rook  ("white", new Position(7,7));
     }
 
-    // --- Required API ---
-
-    /** Returns the piece at the specified position (or null if empty/out of bounds). */
+    /**
+     * Returns the piece at the given position (or null if empty/out of bounds).
+     * @param position board coordinate
+     * @return piece or null
+     */
     public Piece getPiece(Position position) {
         if (position == null) return null;
         int r = position.row, c = position.col;
@@ -66,9 +62,13 @@ public class Board {
     }
 
     /**
-     * Moves a piece from one square to another.
-     * Basic: moves whatever is at `from` to `to`; if a piece is at `to`, it's captured.
-     * (No check rules or piece-geometry validation here.)
+     * Attempts to move a piece from {@code from} to {@code to}.
+     * Validates via the piece's {@code isValidMove}, blocks self-capture,
+     * captures opponents, and updates positions.
+     *
+     * @param from start square
+     * @param to   destination square
+     * @return true if the move was executed; false if illegal/blocked
      */
     public boolean movePiece(Position from, Position to) {
         if (from == null || to == null) return false;
@@ -79,30 +79,36 @@ public class Board {
         Piece p = grid[fr][fc];
         if (p == null) return false;
 
-        // capture if present
+        // geometry/path validation delegated to the piece
+        if (!p.isValidMove(tr, tc, grid)) return false;
+
+        // prevent capturing your own color (generic)
         Piece target = grid[tr][tc];
+        if (target != null && target.getColor().equals(p.getColor())) return false;
+
+        // capture if present
         if (target != null) captured.add(target);
 
         // move and update piece position
         grid[fr][fc] = null;
-        p.move(to);                // relies on your Piece.move(Position)
+        p.move(to);
         grid[tr][tc] = p;
         return true;
     }
 
-    /** Checks if a given color is in check (stub; returns false for now). */
+    /** @return true if the given side is in check (not implemented yet). */
     public boolean isCheck(Color color) {
         // TODO: implement king-in-check detection
         return false;
     }
 
-    /** Checks if a given color is in checkmate (stub; returns false for now). */
+    /** @return true if the given side is checkmated (not implemented yet). */
     public boolean isCheckmate(Color color) {
         // TODO: implement full checkmate logic
         return false;
     }
 
-    /** Prints the board to the console with files A–H and ranks 8–1. */
+    /** Prints the board with files A–H and ranks 8–1. */
     public void display() {
         System.out.println("    A  B  C  D  E  F  G  H");
         for (int r = 0; r < 8; r++) {
@@ -113,7 +119,7 @@ public class Board {
                 if (pc == null) {
                     System.out.print(((r + c) % 2 == 0) ? "   " : " ##");
                 } else {
-                    System.out.print(" " + pc); // if Piece.toString() exists, it will show e.g., wP/bR
+                    System.out.print(" " + pc);
                 }
             }
             System.out.println("  " + rank);

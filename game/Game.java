@@ -2,12 +2,25 @@ package game;
 
 import board.Board;
 import board.Position;
+import pieces.Piece;
+import java.util.Scanner;
 
+/**
+ * Controls the flow of a chess game.
+ */
 public class Game {
+
+    /** The chess board. */
     private final Board board;
+
+    /** The white player. */
     private final Player white;
+
+    /** The black player. */
     private final Player black;
-    private String currentTurn; // "white" or "black"
+
+    /** Current turn ("white" or "black"). */
+    private String currentTurn;
 
     public Game(Board board, Player white, Player black) {
         this.board = board;
@@ -16,20 +29,60 @@ public class Game {
         this.currentTurn = "white";
     }
 
+    /** Starts the game by displaying the board. */
     public void start() {
-        // nothing fancy yet; board should already be populated somewhere else
         board.display();
     }
 
+    /** Ends the game. */
     public void end() {
         System.out.println("Game over.");
     }
 
-    public void play() {
-        // placeholder “loop”—replace with real input later
-        // example scripted move: E2 -> E4 (row 6, col 4 to row 4, col 4)
-        white.makeMove(board, new Position(6,4), new Position(4,4));
-        currentTurn = "black";
-        board.display();
+    /** Runs the interactive CLI loop (same behavior you had in Main). */
+    public void runCli() {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Type moves like: E2 E4   |  'board' to reprint  |  'q' to quit");
+
+        while (true) {
+            System.out.print("[" + currentTurn + "] move> ");
+            String line = sc.nextLine().trim();
+            if (line.equalsIgnoreCase("q")) break;
+            if (line.equalsIgnoreCase("board")) { board.display(); continue; }
+            if (!line.matches("(?i)^[A-H][1-8]\\s+[A-H][1-8]$")) {
+                System.out.println("Bad format. Example: E2 E4");
+                continue;
+            }
+
+            String[] parts = line.split("\\s+");
+            Position from = algebraic(parts[0].toUpperCase());
+            Position to   = algebraic(parts[1].toUpperCase());
+
+            Piece p = board.getPiece(from);
+            if (p == null) { System.out.println("No piece at " + parts[0].toUpperCase()); continue; }
+
+            // Use the getter instead of toString parsing
+            String colorAtFrom = p.getColor(); // "white" or "black"
+            if (!colorAtFrom.equals(currentTurn)) {
+                System.out.println("It's " + currentTurn + "'s turn.");
+                continue;
+            }
+
+            if (!board.movePiece(from, to)) {
+                System.out.println("Illegal or blocked move.");
+                continue;
+            }
+
+            board.display();
+            currentTurn = currentTurn.equals("white") ? "black" : "white";
+        }
+        end();
+    }
+
+    /** Algebraic like "E2" -> Position(row, col). */
+    private static Position algebraic(String sq) {
+        int col = Character.toUpperCase(sq.charAt(0)) - 'A';
+        int row = 8 - (sq.charAt(1) - '0');
+        return new Position(row, col);
     }
 }
