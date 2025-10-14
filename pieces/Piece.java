@@ -25,11 +25,6 @@ public abstract class Piece {
         this.position = position;
     }
 
-    /**
-     * Returns possible moves for this piece.
-     *
-     * @return list of positions the piece can move to
-     */
     public abstract List<Position> possibleMoves();
 
     /**

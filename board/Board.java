@@ -71,41 +71,147 @@ public class Board {
      * @return true if the move was executed; false if illegal/blocked
      */
     public boolean movePiece(Position from, Position to) {
-        if (from == null || to == null) return false;
-        int fr = from.row, fc = from.col, tr = to.row, tc = to.col;
-        if (fr < 0 || fr > 7 || fc < 0 || fc > 7 || tr < 0 || tr > 7 || tc < 0 || tc > 7) return false;
-        if (fr == tr && fc == tc) return false;
+    if (from == null || to == null) return false;
+    int fr = from.row, fc = from.col, tr = to.row, tc = to.col;
+    if (fr < 0 || fr > 7 || fc < 0 || fc > 7 || tr < 0 || tr > 7 || tc < 0 || tc > 7) return false;
+    if (fr == tr && fc == tc) return false;
 
-        Piece p = grid[fr][fc];
-        if (p == null) return false;
+    Piece p = grid[fr][fc];
+    if (p == null) return false;
 
-        // geometry/path validation delegated to the piece
-        if (!p.isValidMove(tr, tc, grid)) return false;
+    // geometry/path validation delegated to the piece
+    if (!p.isValidMove(tr, tc, grid)) return false;
 
-        // prevent capturing your own color (generic)
-        Piece target = grid[tr][tc];
-        if (target != null && target.getColor().equals(p.getColor())) return false;
+    // prevent capturing your own color (generic)
+    Piece target = grid[tr][tc];
+    if (target != null && target.getColor().equals(p.getColor())) return false;
 
-        // capture if present
-        if (target != null) captured.add(target);
+    // NEW: Simulate the move to check if it leaves king in check
+    Position originalPos = new Position(p.getPosition().row, p.getPosition().col);
+    grid[fr][fc] = null;
+    grid[tr][tc] = p;
+    p.move(to);
+    
+    // Determine which color is moving
+    Color movingColor = p.getColor().equals("white") ? Color.WHITE : Color.BLACK;
+    boolean wouldBeInCheck = isCheck(movingColor);
+    
+    // Undo the simulation
+    p.move(originalPos);
+    grid[tr][tc] = target;
+    grid[fr][fc] = p;
+    
+    // If this move would leave our king in check, it's illegal
+    if (wouldBeInCheck) return false;
 
-        // move and update piece position
-        grid[fr][fc] = null;
-        p.move(to);
-        grid[tr][tc] = p;
-        return true;
-    }
+    // Execute the actual move
+    if (target != null) captured.add(target);
+    grid[fr][fc] = null;
+    p.move(to);
+    grid[tr][tc] = p;
+    return true;
+}
 
-    /** @return true if the given side is in check (not implemented yet). */
+     /**
+     * Checks if the given color is in check.
+     * The king is in check if an opponent's piece can attack its position.
+     *
+     * @param color the color to check (white or black)
+     * @return true if the king of that color is in check, false otherwise
+     */
     public boolean isCheck(Color color) {
-        // TODO: implement king-in-check detection
+        // Find the king of the specified color
+        Position kingPos = null;
+        String kingColor = (color == Color.WHITE) ? "white" : "black";
+        
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                Piece p = grid[r][c];
+                if (p instanceof King && p.getColor().equals(kingColor)) {
+                    kingPos = new Position(r, c);
+                    break;
+                }
+            }
+            if (kingPos != null) break;
+        }
+        
+        if (kingPos == null) return false; // No king found
+        
+        // Check if any opponent piece can attack the king's position
+        String opponentColor = (color == Color.WHITE) ? "black" : "white";
+        
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                Piece p = grid[r][c];
+                if (p != null && p.getColor().equals(opponentColor)) {
+                    if (p.isValidMove(kingPos.row, kingPos.col, grid)) {
+                        return true; // King is under attack
+                    }
+                }
+            }
+        }
+        
         return false;
     }
 
-    /** @return true if the given side is checkmated (not implemented yet). */
+    /**
+     * Checks if the given color is in checkmate.
+     * A player is in checkmate if their king is in check
+     * and no legal move can remove the check.
+     *
+     * @param color the color to check (white or black)
+     * @return true if the color is in checkmate, false otherwise
+     */
     public boolean isCheckmate(Color color) {
-        // TODO: implement full checkmate logic
-        return false;
+        // First, check if the king is in check
+        if (!isCheck(color)) {
+            return false; // Not even in check
+        }
+        
+        String playerColor = (color == Color.WHITE) ? "white" : "black";
+        
+        // Try every possible move for this player
+        for (int fr = 0; fr < 8; fr++) {
+            for (int fc = 0; fc < 8; fc++) {
+                Piece p = grid[fr][fc];
+                if (p == null || !p.getColor().equals(playerColor)) continue;
+                
+                // Try all destination squares
+                for (int tr = 0; tr < 8; tr++) {
+                    for (int tc = 0; tc < 8; tc++) {
+                        if (fr == tr && fc == tc) continue;
+                        
+                        // Check if this move is valid
+                        if (!p.isValidMove(tr, tc, grid)) continue;
+                        
+                        Piece target = grid[tr][tc];
+                        if (target != null && target.getColor().equals(playerColor)) continue;
+                        
+                        // Simulate the move
+                        Position originalPos = new Position(fr, fc);
+                        grid[fr][fc] = null;
+                        grid[tr][tc] = p;
+                        Position tempPos = p.getPosition();
+                        p.move(new Position(tr, tc));
+                        
+                        // Check if still in check after this move
+                        boolean stillInCheck = isCheck(color);
+                        
+                        // Undo the move
+                        grid[tr][tc] = target;
+                        grid[fr][fc] = p;
+                        p.move(tempPos);
+                        
+                        // If this move gets us out of check, not checkmate
+                        if (!stillInCheck) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return true;
     }
 
     /** Prints the board with files A–H and ranks 8–1. */
