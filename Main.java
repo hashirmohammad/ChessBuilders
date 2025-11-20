@@ -1,6 +1,8 @@
-import board.Board;
-import game.Game;
-import game.Player;
+package ChessBuilders;
+
+import ChessBuilders.board.*;
+import ChessBuilders.pieces.*;
+import ChessBuilders.game.*;
 
 
 /**

@@ -1,8 +1,7 @@
-package game;
-
-import board.Board;
-import board.Position;
-import pieces.Piece;
+package ChessBuilders.game;
+import ChessBuilders.board.Board;
+import ChessBuilders.board.Position;
+import ChessBuilders.pieces.Piece;
 import java.util.Scanner;
 
 /**

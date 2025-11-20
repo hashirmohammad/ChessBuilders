@@ -1,5 +1,4 @@
-package board;
-
+package ChessBuilders.board;
 /**
  * Represents a coordinate (row and column) on the chessboard.
  * <p>

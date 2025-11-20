@@ -1,6 +1,5 @@
-package pieces;
-
-import board.Position;
+package ChessBuilders.pieces;
+import ChessBuilders.board.Position;
 import java.util.ArrayList;
 import java.util.List;
 

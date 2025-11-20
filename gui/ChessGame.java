@@ -1,3 +1,5 @@
+package ChessBuilders.gui;
+
 import javax.swing.*;
 import java.awt.*;
 

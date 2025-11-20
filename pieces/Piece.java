@@ -1,6 +1,6 @@
-package pieces;
+package ChessBuilders.pieces;
 
-import board.Position;
+import ChessBuilders.board.Position;
 import java.util.List;
 
 /**

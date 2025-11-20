@@ -1,6 +1,5 @@
-package board;
-
-import pieces.*;
+package ChessBuilders.board;
+import ChessBuilders.pieces.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -232,4 +231,53 @@ public class Board {
         }
         System.out.println("    A  B  C  D  E  F  G  H");
     }
+    /**
+ * Sets up the board from a saved state.
+ * Clears the current board and places pieces at specified positions.
+ * Used for loading saved games.
+ * 
+ * @param pieceData Array of piece information (type, color, position)
+ */
+public void setupFromSave(String[][] pieceData) {
+    // Clear the board
+    for (int r = 0; r < 8; r++) {
+        for (int c = 0; c < 8; c++) {
+            grid[r][c] = null;
+        }
+    }
+    
+    // Place pieces from saved data
+    for (int r = 0; r < 8; r++) {
+        for (int c = 0; c < 8; c++) {
+            if (pieceData[r][c] != null) {
+                String[] parts = pieceData[r][c].split(",");
+                String type = parts[0];
+                String color = parts[1];
+                Position pos = new Position(r, c);
+                
+                switch (type) {
+    case "King":
+        grid[r][c] = new King(color, pos);
+        break;
+    case "Queen":
+        grid[r][c] = new Queen(color, pos);
+        break;
+    case "Rook":
+        grid[r][c] = new Rook(color, pos);
+        break;
+    case "Bishop":
+        grid[r][c] = new Bishop(color, pos);
+        break;
+    case "Knight":
+        grid[r][c] = new Knight(color, pos);
+        break;
+    case "Pawn":
+        grid[r][c] = new Pawn(color, pos);
+        break;
+}
+
+            }
+        }
+    }
+}
 }
