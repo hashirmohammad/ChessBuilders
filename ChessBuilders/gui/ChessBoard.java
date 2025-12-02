@@ -86,7 +86,15 @@ public class ChessBoard extends JPanel {
         if(isOn) squares[r][c].setBackground(highlightColor);
         else squares[r][c].setBackground((r + c) % 2 == 0 ? lightColor : darkColor);
     }
-    
+    public void clearAllHighlights() {
+        for (int r = 0; r < BOARD_SIZE; r++) {
+            for (int c = 0; c < BOARD_SIZE; c++) {
+                // Determine what the original color should be
+                Color original = (r + c) % 2 == 0 ? lightColor : darkColor;
+                squares[r][c].setBackground(original);
+            }
+        }
+    }
     public void resetSelection() {
         if (inputHandler != null) {
             inputHandler.resetSelection();

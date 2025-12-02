@@ -18,7 +18,7 @@ public class ChessGame extends JFrame {
      * Constructor for ChessGame.
      */
     public ChessGame() {
-        setTitle("Chess Game - Phase 2");
+        setTitle("Chess Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         
@@ -59,13 +59,13 @@ public class ChessGame extends JFrame {
         JLabel capturedLabel = new JLabel("Captured Pieces:");
         capturedLabel.setFont(new Font("Arial", Font.BOLD, 14));
         
-        JLabel whiteCaptLabel = new JLabel("Captured by White:");
+        JLabel whiteCaptLabel = new JLabel();
         capturedWhitePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         capturedWhitePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         capturedWhitePanel.setPreferredSize(new Dimension(280, 60));
         chessBoard.setCapturedWhitePanel(capturedWhitePanel);
         
-        JLabel blackCaptLabel = new JLabel("Captured by Black:");
+        JLabel blackCaptLabel = new JLabel();
         capturedBlackPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         capturedBlackPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         capturedBlackPanel.setPreferredSize(new Dimension(280, 60));

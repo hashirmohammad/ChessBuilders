@@ -6,14 +6,12 @@ import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.awt.event.*;
 
-/**
- * Handles Mouse clicks and Drag-and-Drop interactions.
- */
 public class InputHandler {
 
     private final ChessBoard view;
     private final GameController controller;
 
+    // Track selection
     private int selectedRow = -1;
     private int selectedCol = -1;
 
@@ -22,25 +20,23 @@ public class InputHandler {
         this.controller = controller;
     }
 
-    /**
-     * Attaches listeners to a specific square button.
-     */
     public void attachListeners(JButton square, int row, int col) {
         // 1. Click Listener
         square.addActionListener(e -> handleClick(row, col));
 
-        // 2. Drag Source (Starting a drag)
+        // 2. Drag Support
         DragSource ds = new DragSource();
         ds.createDefaultDragGestureRecognizer(square, DnDConstants.ACTION_MOVE, dge -> {
             Piece p = controller.getPieceAt(row, col);
             if (p != null && p.getColor().equalsIgnoreCase(controller.getCurrentTurn())) {
-                selectSquare(row, col); // Visual highlight
+                // Select and highlight immediately on drag start
+                handleClick(row, col); 
                 Transferable t = new StringSelection(row + "," + col);
                 ds.startDrag(dge, DragSource.DefaultMoveDrop, t, new DragSourceAdapter() {});
             }
         });
 
-        // 3. Drop Target (Finishing a drag)
+        // 3. Drop Support
         new DropTarget(square, new DropTargetAdapter() {
             public void drop(DropTargetDropEvent dtde) {
                 try {
@@ -50,9 +46,12 @@ public class InputHandler {
                     int fromR = Integer.parseInt(coords[0]);
                     int fromC = Integer.parseInt(coords[1]);
 
+                    // Only process if moved to a different square
                     if (fromR != row || fromC != col) {
                         controller.processMove(fromR, fromC, row, col);
                     }
+                    
+                    // Cleanup
                     resetSelection();
                     dtde.dropComplete(true);
                 } catch (Exception e) {
@@ -63,27 +62,29 @@ public class InputHandler {
     }
 
     private void handleClick(int row, int col) {
-        // If nothing selected, try to select
+        // If nothing is currently selected
         if (selectedRow == -1) {
             Piece p = controller.getPieceAt(row, col);
+            // Only allow selecting your own pieces
             if (p != null && p.getColor().equalsIgnoreCase(controller.getCurrentTurn())) {
                 selectSquare(row, col);
             }
         } 
-        // If something selected...
+        // If a piece IS currently selected
         else {
-            // If clicked same square, deselect
+            // Clicked the SAME piece? Deselect it.
             if (selectedRow == row && selectedCol == col) {
                 resetSelection();
             } 
-            // If clicked own piece, switch selection
+            // Clicked a different piece...
             else {
                 Piece target = controller.getPieceAt(row, col);
+                // Is it one of OUR pieces? Switch selection to that one.
                 if (target != null && target.getColor().equalsIgnoreCase(controller.getCurrentTurn())) {
-                    resetSelection();
-                    selectSquare(row, col);
-                } else {
-                    // Attempt move
+                    selectSquare(row, col); // Switch selection
+                } 
+                // Is it an empty square or enemy? Try to MOVE.
+                else {
                     controller.processMove(selectedRow, selectedCol, row, col);
                     resetSelection();
                 }
@@ -92,15 +93,18 @@ public class InputHandler {
     }
 
     private void selectSquare(int r, int c) {
+        // 1. Clear everything first (Fixes the "Multiple Green Squares" glitch)
+        view.clearAllHighlights();
+        
+        // 2. Set new selection
         selectedRow = r;
         selectedCol = c;
         view.highlightSquare(r, c, true);
     }
 
     public void resetSelection() {
-        if (selectedRow != -1) {
-            view.highlightSquare(selectedRow, selectedCol, false);
-        }
+        // Clear everything to be safe
+        view.clearAllHighlights();
         selectedRow = -1;
         selectedCol = -1;
     }

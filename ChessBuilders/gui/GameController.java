@@ -26,8 +26,7 @@ public class GameController {
 
     public GameController(ChessBoard view) {
         this.view = view;
-        // DELETE THIS LINE: startNewGame(); 
-        // We will call this manually from ChessBoard after everything is ready.
+        
     }
 
     public void startNewGame() {
@@ -125,22 +124,53 @@ public class GameController {
         JFileChooser fc = new JFileChooser();
         if (fc.showSaveDialog(view) == JFileChooser.APPROVE_OPTION) {
             try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fc.getSelectedFile()))) {
-                out.writeObject(createCurrentState());
+                
+                // FIX: We create a list containing both the Current State AND the History
+                List<Object> savePackage = new ArrayList<>();
+                savePackage.add(createCurrentState()); // Index 0: Current State
+                savePackage.add(gameHistory);          // Index 1: The Undo Stack
+                
+                out.writeObject(savePackage);
                 JOptionPane.showMessageDialog(view, "Game Saved.");
+                
             } catch (IOException e) {
                 e.printStackTrace();
+                JOptionPane.showMessageDialog(view, "Error saving file: " + e.getMessage());
             }
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void loadGame() {
         JFileChooser fc = new JFileChooser();
         if (fc.showOpenDialog(view) == JFileChooser.APPROVE_OPTION) {
             try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(fc.getSelectedFile()))) {
-                restoreState((GameState) in.readObject());
+                
+                Object loadedObj = in.readObject();
+                
+                // Check if this is a "New Style" save (List) or "Old Style" (Single Object)
+                if (loadedObj instanceof List) {
+                    // NEW FIX: Restore both state and history
+                    List<Object> savePackage = (List<Object>) loadedObj;
+                    GameState stateToRestore = (GameState) savePackage.get(0);
+                    List<GameState> historyToRestore = (List<GameState>) savePackage.get(1);
+                    
+                    restoreState(stateToRestore);
+                    
+                    // Restore the undo stack
+                    this.gameHistory.clear();
+                    this.gameHistory.addAll(historyToRestore);
+                    
+                } else if (loadedObj instanceof GameState) {
+                    // Fallback for old save files (Undo won't work for pre-save moves here, but game loads)
+                    restoreState((GameState) loadedObj);
+                    this.gameHistory.clear(); // Clear old history to prevent glitches
+                }
+
                 view.updateBoardFromBackend(backendBoard);
                 updateUI();
                 JOptionPane.showMessageDialog(view, "Game Loaded.");
+                
             } catch (Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(view, "Error loading file.");
