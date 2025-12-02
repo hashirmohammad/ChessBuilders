@@ -12,7 +12,7 @@
 
 ## Project Overview
 
-This project is a fully functional Chess application built in Java. It combines backend logic with a graphical user interface (GUI) using Swing. The project is designed based of separate game logic from the visual interface.
+This project is a fully functional Chess application built in Java. It's built with a backend logic tied with a graphical user interface (GUI) via Swing. The project is designed based of separate game logic from the visual interface.
 
 **System Architecture:**
 
