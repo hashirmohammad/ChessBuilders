@@ -1,86 +1,88 @@
-Class: CS 3354.R01
+# GUI Chess Game Project
 
-Team Members: Andre Mercado, Zachary Terry, and Muhammad Hashir
+## Team Information
 
-# ChessBuilders - Java Chess Game
+* **Team Name:** ChessBuilders
+* **Team Members:**
+    * Andre Mercado
+    * Zachary Terry
+    * Muhammad Hashir
+* **Semester:** Fall 2025
+* **Course Number and Section:** CS 3354.R01
 
-A fully functional Chess application built in Java. This project implements standard chess rules, a graphical user interface (GUI) using Swing, and features such as save/load functionality, undo history, and visual themes.
+## Project Overview
 
-##  Project Structure
+This project is a fully functional Chess application built in Java. It combines backend logic with a graphical user interface (GUI) using Swing. The project is designed based of separate game logic from the visual interface.
 
-The project is organized by the game logic from the visual interface.
+**System Architecture:**
 
-###  The Logic (Model)
-* **`ChessBuilders.board.Board`**: This is the heavy lifter. It maintains the 8x8 grid of pieces. It contains the logic to:
-    * Validate if a move path is clear.
-    * Simulate moves to see if they result in "Check" (illegal).
-    * Detect "Checkmate".
-* **`ChessBuilders.pieces.*`**: Contains logic for individual pieces (e.g., `King.java`, `Queen.java`, `Knight.java`). Each file describes how one specific piece moves (e.g., "Rooks move in straight lines," "Knights jump in L-shapes").
+* **The Logic (Model)**
+    * `ChessBuilders.board.Board`: Maintains the 8x8 grid, validates move paths, simulates moves to prevent self-check, and detects Checkmate.
+    * `ChessBuilders.pieces.*`: Contains logic for individual pieces (e.g., `King.java`, `Knight.java`) defining specific movement rules (e.g., L-shapes for Knights).
+* **The Interface (View)**
+    * `ChessBuilders.gui.ChessGame`: The main window frame containing the Menu Bar, History sidebar, and Captured Pieces panels.
+    * `ChessBuilders.gui.ChessBoard`: The visual 64-square grid. Handles drawing buttons, themes (Green/White/Wood), and piece icons. It is strictly visual and does not know chess rules.
+* **The Controls**
+    * `ChessBuilders.gui.GameController`: It initializes the backend, validates moves, updates the backend, records history ("e2 -> e4"), and triggers UI repaints. It also handles Save/Load functionality.
+    * `ChessBuilders.gui.InputHandler`: Handles mouse clicks and drag-and-drop events, translating pixel clicks into grid coordinates for the controller.
 
-###  The Interface (View)
-* **`ChessBuilders.gui.ChessGame`**: The main window frame. It holds the "Menu Bar" (File, Settings), the "History" text area on the right, and the "Captured Pieces" panels. It creates the container for the board.
-* **`ChessBuilders.gui.ChessBoard`**: The actual 64-square grid. This file is strictly visual; it handles drawing buttons, setting their background colors (Green/White/Wood), and drawing the piece icons. It does *not* know the rules of chess.
+## Preview
 
-###  The Controls (Controller)
-* **`ChessBuilders.gui.GameController`**: The "Brain" of the GUI. 
-    * When the GUI starts, this creates the backend `Board`.
-    * When a player moves, this checks if it's valid, updates the backend, records the move history string ("e2 -> e4"), and tells the GUI to repaint.
-    * It handles saving and loading the `GameState` file.
-* **`ChessBuilders.gui.InputHandler`**: The listener. It listens for mouse clicks and drag-and-drop events. It translates "User clicked pixel X,Y" into "User wants to move piece at Row 1, Col 4" and sends that request to the `GameController`.
+### GUI Preview
+![GUI Preview](gui_preview.jpg)
 
----
+### Class Diagram
+![Class Diagram](classDiagram.png)
 
-##  Features
-
-1.  **Full Rule Enforcement**: Valid moves, Check detection, Checkmate, and Pawn Promotion.
-2.  **Cross-Platform GUI**:
-    * Works on Windows, macOS, and Linux.
-    * **Click-to-Move**: Click a piece (highlights green), then click the destination.
-    * **Drag-and-Drop**: Drag a piece to a valid square.
-3.  **Game State Management**:
-    * **Undo Move**: Revert accidental moves.
-    * **Save/Load**: Save your progress to a `.save` file and resume later.
-4.  **Customization**: Choose from 4 distinct board color themes (Classic, Modern, Wood, Ocean).
-5.  **History**: Visual log of moves and captured pieces.
-
-
-
----
-
-##  How to Compile and Run
+## How to Run the Project
 
 ### Prerequisites
 * Java Development Kit (JDK) 8 or higher.
 
 ### Option 1: Visual Studio Code (Recommended)
-This is the easiest way to run the project on any operating system.
+1.  Ensure you have the **"Extension Pack for Java"** installed.
+2.  Go to **File > Open Folder...** and select the **parent folder** containing the `ChessBuilders` directory.
+3.  Navigate to `ChessBuilders/Main.java`.
+4.  Click **Run Java**.
 
-1.  **Install Extensions**: Ensure you have the **"Extension Pack for Java"** installed in VS Code.
-2.  **Open Project**:
-    * Go to `File` > `Open Folder...`
-    * Select the **parent folder** that contains the `ChessBuilders` folder. (Do not open the `ChessBuilders` folder itself; open the one *containing* it).
-3.  **Run**:
-    * In the file explorer, navigate to `ChessBuilders/Main.java`.
-    * Wait a moment for the Java language server to load.
-    * Click the **Run** or **Play** button that appears just above the `public static void main` line, or press `F5`.
+### Option 2: Command Line (Windows)
+Open Command Prompt (cmd) or PowerShell and navigate to the folder containing the `ChessBuilders` directory.
 
-### Option 2: Command Line 
-#### Windows
-Open Command Prompt (`cmd`) or PowerShell and navigate to the folder containing the `ChessBuilders` directory.
+1.  **Compile:**
+    ```cmd
+    javac ChessBuilders\Main.java
+    ```
+2.  **Run:**
+    ```cmd
+    java ChessBuilders.Main
+    ```
 
-**1. Compile:**
-*Note: We use backslashes (`\`) for file paths on Windows.*
-```
-javac ChessBuilders\Main.java
-java ChessBuilders.Main
-```
-#### Terminal
+### Option 3: Command Line (macOS/Linux)
+Open your terminal and navigate to the folder containing the `ChessBuilders` directory.
 
-Open your terminal and navigate to the folder containing the ChessBuilders directory.
+1.  **Compile:**
+    ```bash
+    javac ChessBuilders/Main.java
+    ```
+2.  **Run:**
+    ```bash
+    java ChessBuilders.Main
+    ```
 
-**1. Compile:** 
-*Note: We use forward slashes (/) for file paths on Mac/Linux.
-```
-javac ChessBuilders/Main.java
-java ChessBuilders.Main
-```
+## Features Checklist
+
+- [x] GUI with an 8x8 Chessboard
+- [x] Piece Movement with Mouse Interaction (Click-to-Move & Drag-and-Drop)
+- [x] Move Validation Based on Chess Rules
+- [x] Capture Mechanism
+- [x] Check and Checkmate Detection
+- [x] Turn-Based Play for Two Players
+- [x] Game End Notification on Checkmate
+- [x] **Extra Feature:** Pawn Promotion to Queen
+- [x] **Extra Feature:** Undo Move Functionality
+- [x] **Extra Feature:** Save/Load Game State (.save files)
+- [x] **Extra Feature:** Visual Themes (Classic, Modern, Wood, Ocean)
+- [x] **Extra Feature:** Move History Log
+
+
+
