@@ -70,7 +70,7 @@ public class Board {
         Piece p = grid[fr][fc];
         if (p == null) return false;
 
-        // geometry/path validation delegated to the piece
+        // path validation delegated to the piece
         if (!p.isValidMove(tr, tc, grid)) return false;
 
         // prevent capturing your own color

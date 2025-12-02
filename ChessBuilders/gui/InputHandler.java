@@ -6,12 +6,16 @@ import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.awt.event.*;
 
+/**
+ * Handles all mouse input (clicks and drag-and-drop) for the ChessBoard.
+ * Translates raw Swing events into game actions sent to the GameController.
+ */
 public class InputHandler {
 
     private final ChessBoard view;
     private final GameController controller;
 
-    // Track selection
+    // Track the currently selected square (-1 means nothing selected)
     private int selectedRow = -1;
     private int selectedCol = -1;
 
@@ -20,38 +24,45 @@ public class InputHandler {
         this.controller = controller;
     }
 
+    /**
+     * Attaches Click, Drag, and Drop listeners to a specific square button.
+     */
     public void attachListeners(JButton square, int row, int col) {
-        // 1. Click Listener
+        // 1. Standard Click Event
         square.addActionListener(e -> handleClick(row, col));
 
-        // 2. Drag Support
+        // 2. Drag Start Event
         DragSource ds = new DragSource();
         ds.createDefaultDragGestureRecognizer(square, DnDConstants.ACTION_MOVE, dge -> {
             Piece p = controller.getPieceAt(row, col);
+            
+            // Only allow dragging if it's the player's turn and their own piece
             if (p != null && p.getColor().equalsIgnoreCase(controller.getCurrentTurn())) {
-                // Select and highlight immediately on drag start
-                handleClick(row, col); 
+                handleClick(row, col); // Select visually
+                
+                // create payload with coordinates
                 Transferable t = new StringSelection(row + "," + col);
                 ds.startDrag(dge, DragSource.DefaultMoveDrop, t, new DragSourceAdapter() {});
             }
         });
 
-        // 3. Drop Support
+        // 3. Drop Event
         new DropTarget(square, new DropTargetAdapter() {
             public void drop(DropTargetDropEvent dtde) {
                 try {
                     dtde.acceptDrop(DnDConstants.ACTION_MOVE);
+                    
+                    // Parse coordinates from payload
                     String data = (String) dtde.getTransferable().getTransferData(DataFlavor.stringFlavor);
                     String[] coords = data.split(",");
                     int fromR = Integer.parseInt(coords[0]);
                     int fromC = Integer.parseInt(coords[1]);
 
-                    // Only process if moved to a different square
+                    // Execute move if dropped on a different square
                     if (fromR != row || fromC != col) {
                         controller.processMove(fromR, fromC, row, col);
                     }
                     
-                    // Cleanup
                     resetSelection();
                     dtde.dropComplete(true);
                 } catch (Exception e) {
@@ -61,29 +72,32 @@ public class InputHandler {
         });
     }
 
+    /**
+     * logic for selecting pieces or moving them based on current state.
+     */
     private void handleClick(int row, int col) {
-        // If nothing is currently selected
+        // Case A: Nothing selected -> Try to select a piece
         if (selectedRow == -1) {
             Piece p = controller.getPieceAt(row, col);
-            // Only allow selecting your own pieces
             if (p != null && p.getColor().equalsIgnoreCase(controller.getCurrentTurn())) {
                 selectSquare(row, col);
             }
         } 
-        // If a piece IS currently selected
+        // Case B: Piece already selected
         else {
-            // Clicked the SAME piece? Deselect it.
+            // Clicked same piece? -> Deselect
             if (selectedRow == row && selectedCol == col) {
                 resetSelection();
             } 
-            // Clicked a different piece...
+            // Clicked different square -> Check target
             else {
                 Piece target = controller.getPieceAt(row, col);
-                // Is it one of OUR pieces? Switch selection to that one.
+                
+                // If clicked another own piece, switch selection
                 if (target != null && target.getColor().equalsIgnoreCase(controller.getCurrentTurn())) {
-                    selectSquare(row, col); // Switch selection
+                    selectSquare(row, col); 
                 } 
-                // Is it an empty square or enemy? Try to MOVE.
+                // Otherwise, attempt to move there
                 else {
                     controller.processMove(selectedRow, selectedCol, row, col);
                     resetSelection();
@@ -93,17 +107,15 @@ public class InputHandler {
     }
 
     private void selectSquare(int r, int c) {
-        // 1. Clear everything first (Fixes the "Multiple Green Squares" glitch)
+        // Clear all highlights first to prevent visual glitches (e.g. fast clicking)
         view.clearAllHighlights();
         
-        // 2. Set new selection
         selectedRow = r;
         selectedCol = c;
         view.highlightSquare(r, c, true);
     }
 
     public void resetSelection() {
-        // Clear everything to be safe
         view.clearAllHighlights();
         selectedRow = -1;
         selectedCol = -1;

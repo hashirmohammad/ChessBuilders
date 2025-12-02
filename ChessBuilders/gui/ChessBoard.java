@@ -7,59 +7,74 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * The main View class for the Chess Game. 
+ * Responsibilities:
+ * 1. Draws the 8x8 grid of buttons.
+ * 2. Handles visual updates (colors, highlighting, piece icons).
+ * 3. Acts as the bridge between the GameController and the UI components.
+ */
 public class ChessBoard extends JPanel {
     private static final int BOARD_SIZE = 8;
+    
+    // The visual grid of buttons
     private final JButton[][] squares = new JButton[8][8];
     
-    // Components
+    // MVC Components
     private GameController controller;
     private InputHandler inputHandler;
 
-    // UI Elements passed from ChessGame frame
+    // External UI references (Sidebar elements)
     private JTextArea historyArea;
     private JPanel whitePanel;
     private JPanel blackPanel;
     private JLabel turnLabel;
 
-    // Colors
+    // Theme Colors (Default: Classic)
     private Color lightColor = new Color(240, 217, 181);
     private Color darkColor = new Color(181, 136, 99);
-    private final Color highlightColor = new Color(127, 166, 80);
+    private final Color highlightColor = new Color(127, 166, 80); // Green for selection
 
     public ChessBoard() {
         setLayout(new GridLayout(8, 8));
         
-        // initialize controller and input handler
+        // Initialize the Controller (Logic) and InputHandler (Mouse Events)
         this.controller = new GameController(this);
         this.inputHandler = new InputHandler(this, controller);
         
         createBoardGrid();
         
-        // Start game only AFTER inputHandler is created
+        // IMPORTANT: Start the game only AFTER inputHandler is fully created.
+        // This prevents a NullPointerException when the game tries to reset selection on startup.
         this.controller.startNewGame(); 
     }
 
+    /**
+     * Builds the visual 8x8 grid of JButtons.
+     */
     private void createBoardGrid() {
-        removeAll();
+        removeAll(); // Clear if rebuilding (e.g., new game)
+        
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
                 JButton btn = new JButton();
                 
-                // --- MAC COMPATIBILITY FIXES ---
-                btn.setOpaque(true);               // REQUIRED for background colors on Mac
-                btn.setContentAreaFilled(true);    // REQUIRED for background colors to paint
-                btn.setBorderPainted(true);        // Ensures the border line is drawn
+                // --- Cross-Platform Compatibility ---
+                // By default, macOS buttons are transparent/glassy. 
+                // These 3 lines force the background color to paint correctly on Mac & Windows.
+                btn.setOpaque(true);               
+                btn.setContentAreaFilled(true);    
+                btn.setBorderPainted(true);        
                 
-                btn.setFocusPainted(false);
-                btn.setFont(new Font("Sans-Serif", Font.PLAIN, 50));
+                // Visual styling
+                btn.setFocusPainted(false); // No "clicked" outline
+                btn.setFont(new Font("Sans-Serif", Font.PLAIN, 50)); // Font size for chess icons
+                btn.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1)); // Grid lines
                 
-                // Restore the black grid lines
-                btn.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-                
-                // Color
+                // Set initial background color based on checkerboard pattern
                 btn.setBackground((r + c) % 2 == 0 ? lightColor : darkColor);
                 
-                // Attach Logic
+                // Attach mouse click and drag listeners
                 inputHandler.attachListeners(btn, r, c);
                 
                 squares[r][c] = btn;
@@ -70,8 +85,14 @@ public class ChessBoard extends JPanel {
         repaint();
     }
 
-    // --- Update Methods called by Controller ---
+    // ==========================================
+    //           View Update Methods
+    // ==========================================
 
+    /**
+     * Syncs the visual board with the backend logic board.
+     * Updates the text/icon of every button.
+     */
     public void updateBoardFromBackend(Board backend) {
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
@@ -82,26 +103,41 @@ public class ChessBoard extends JPanel {
         repaint();
     }
 
+    /**
+     * Toggles the green highlight on a specific square.
+     */
     public void highlightSquare(int r, int c, boolean isOn) {
-        if(isOn) squares[r][c].setBackground(highlightColor);
-        else squares[r][c].setBackground((r + c) % 2 == 0 ? lightColor : darkColor);
+        if(isOn) {
+            squares[r][c].setBackground(highlightColor);
+        } else {
+            // Revert to original checkerboard color
+            squares[r][c].setBackground((r + c) % 2 == 0 ? lightColor : darkColor);
+        }
     }
+
+    /**
+     * Forcefully resets ALL squares to their original colors.
+     * Essential for preventing visual glitches where multiple squares stay green
+     * if the user clicks very fast.
+     */
     public void clearAllHighlights() {
         for (int r = 0; r < BOARD_SIZE; r++) {
             for (int c = 0; c < BOARD_SIZE; c++) {
-                // Determine what the original color should be
                 Color original = (r + c) % 2 == 0 ? lightColor : darkColor;
                 squares[r][c].setBackground(original);
             }
         }
     }
+
     public void resetSelection() {
         if (inputHandler != null) {
             inputHandler.resetSelection();
         }
     }
 
-    // --- Styling ---
+    // ==========================================
+    //           Styling & Customization
+    // ==========================================
     
     public void changeBoardStyle(String styleName) {
         switch (styleName) {
@@ -115,6 +151,7 @@ public class ChessBoard extends JPanel {
     public void setColors(Color light, Color dark) {
         this.lightColor = light;
         this.darkColor = dark;
+        // Re-apply colors to existing buttons
         for(int r=0; r<8; r++) {
             for(int c=0; c<8; c++) {
                 squares[r][c].setBackground((r+c)%2==0 ? light : dark);
@@ -123,36 +160,50 @@ public class ChessBoard extends JPanel {
         repaint();
     }
 
-    // --- Setters for UI components ---
+    // ==========================================
+    //        External Component Linkage
+    // ==========================================
+    // These methods allow the main JFrame (ChessGame) to pass in UI references
+    
     public void setHistoryArea(JTextArea a) { this.historyArea = a; }
     
     public void setCapturedWhitePanel(JPanel panel) { 
         this.whitePanel = panel; 
-        controller.refreshUI();
+        controller.refreshUI(); // Force immediate update
     }
 
     public void setCapturedBlackPanel(JPanel panel) { 
         this.blackPanel = panel; 
-        controller.refreshUI();
+        controller.refreshUI(); // Force immediate update
     }
 
     public void setTurnLabel(JLabel l) { this.turnLabel = l; }
 
-    // --- Forwarding methods to Controller ---
+    // ==========================================
+    //        Controller Forwarding
+    // ==========================================
+    // Pass-through methods so the MenuBar can trigger game actions
+    
     public void newGame() { controller.startNewGame(); }
     public void saveGame() { controller.saveGame(); }
     public void loadGame() { controller.loadGame(); }
     public void undoMove() { controller.undoMove(); }
 
-    // --- UI Update Helpers ---
+    // ==========================================
+    //          UI Update Helpers
+    // ==========================================
+    
     public void updateHistory(List<String> moves) {
         if(historyArea == null) return;
         StringBuilder sb = new StringBuilder();
-        for(int i=0; i<moves.size(); i++) sb.append(i+1).append(". ").append(moves.get(i)).append("\n");
+        for(int i=0; i<moves.size(); i++) {
+            sb.append(i+1).append(". ").append(moves.get(i)).append("\n");
+        }
         historyArea.setText(sb.toString());
     }
 
     public void updateCaptured(List<ChessPiece> white, List<ChessPiece> black) {
+        // Helper to refresh a capture panel with piece icons
         if(whitePanel != null) {
             whitePanel.removeAll();
             for(ChessPiece p : white) whitePanel.add(createPieceLabel(p));
@@ -175,6 +226,9 @@ public class ChessBoard extends JPanel {
         return l;
     }
 
+    /**
+     * Converts a backend Piece object into a Unicode String symbol.
+     */
     private String getSymbol(Piece p) {
         if(p == null) return "";
         boolean w = p.getColor().equalsIgnoreCase("white");
