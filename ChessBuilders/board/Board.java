@@ -109,6 +109,13 @@ public class Board {
     p.move(to);
     grid[tr][tc] = p;
     return true;
+    if (p instanceof Pawn) {
+    if ((p.getColor().equals("white") && tr == 0) || 
+        (p.getColor().equals("black") && tr == 7)) {
+        // Promote to queen automatically
+        grid[tr][tc] = new Queen(p.getColor(), to);
+    }
+}
 }
 
      /**

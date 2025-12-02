@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Phase 1 backend imports
-
 import ChessBuilders.board.Board;
 import ChessBuilders.board.Position;
 import ChessBuilders.pieces.*;
@@ -22,6 +21,7 @@ import ChessBuilders.pieces.*;
  */
 public class ChessBoard extends JPanel {
     private static final int SQUARE_SIZE = 70;
+    private static final int BOARD_SIZE = 8;
     
     // Backend board with all game logic from Phase 1
     private Board backendBoard;
@@ -57,14 +57,14 @@ public class ChessBoard extends JPanel {
         backendBoard.setupClassic();
         
         // Initialize GUI structures
-        board = new ChessPiece[8][8];
-        squares = new JButton[8][8];
+        board = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
+        squares = new JButton[BOARD_SIZE][BOARD_SIZE];
         moveHistory = new ArrayList<>();
         whiteCaptured = new ArrayList<>();
         blackCaptured = new ArrayList<>();
         gameHistory = new ArrayList<>();
         
-        setLayout(new GridLayout(8, 8));
+        setLayout(new GridLayout(BOARD_SIZE, BOARD_SIZE));
         initializeBoard();
         createSquares();
     }
@@ -75,13 +75,13 @@ public class ChessBoard extends JPanel {
     private void initializeBoard() {
         // Black pieces
         String[] backRow = {"rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"};
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < BOARD_SIZE; i++) {
             board[0][i] = new ChessPiece(backRow[i], "black");
             board[1][i] = new ChessPiece("pawn", "black");
         }
         
         // White pieces
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < BOARD_SIZE; i++) {
             board[6][i] = new ChessPiece("pawn", "white");
             board[7][i] = new ChessPiece(backRow[i], "white");
         }
@@ -91,8 +91,8 @@ public class ChessBoard extends JPanel {
      * Creates the GUI squares for the chess board.
      */
     private void createSquares() {
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
                 JButton square = new JButton();
                 square.setFont(new Font("Sans-Serif", Font.PLAIN, 50));
                 square.setPreferredSize(new Dimension(SQUARE_SIZE, SQUARE_SIZE));
@@ -162,20 +162,6 @@ public class ChessBoard extends JPanel {
                     String[] coords = data.split(",");
                     int fromRow = Integer.parseInt(coords[0]);
                     int fromCol = Integer.parseInt(coords[1]);
-                    
-                    // Check if trying to capture own piece using backend
-                    Position fromPos = new Position(fromRow, fromCol);
-                    Position toPos = new Position(row, col);
-                    Piece fromPiece = backendBoard.getPiece(fromPos);
-                    Piece toPiece = backendBoard.getPiece(toPos);
-                    
-                    if (toPiece != null && toPiece.getColor().equals(fromPiece.getColor())) {
-                        highlightSquare(fromRow, fromCol, false);
-                        selectedRow = -1;
-                        selectedCol = -1;
-                        dtde.dropComplete(false);
-                        return;
-                    }
                     
                     makeMove(fromRow, fromCol, row, col);
                     highlightSquare(fromRow, fromCol, false);
@@ -280,6 +266,15 @@ public class ChessBoard extends JPanel {
         // Update GUI to match backend
         updateGUIFromBackend();
         
+        // Check if pawn promotion occurred
+        Piece finalPiece = backendBoard.getPiece(to);
+        if (movingPiece instanceof Pawn && finalPiece instanceof Queen) {
+            JOptionPane.showMessageDialog(this, 
+                "Pawn promoted to Queen!",
+                "Promotion", 
+                JOptionPane.INFORMATION_MESSAGE);
+        }
+        
         // Track captured pieces in GUI
         if (capturedPiece != null) {
             ChessPiece guiPiece = convertToGUIPiece(capturedPiece);
@@ -287,12 +282,6 @@ public class ChessBoard extends JPanel {
                 whiteCaptured.add(guiPiece);
             } else {
                 blackCaptured.add(guiPiece);
-            }
-            
-            // Check for king capture (game over)
-            if (capturedPiece instanceof King) {
-                declareWinner(movingPiece.getColor());
-                return;
             }
         }
         
@@ -334,8 +323,8 @@ public class ChessBoard extends JPanel {
      * Updates GUI board to match backend board state.
      */
     private void updateGUIFromBackend() {
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
                 Position pos = new Position(row, col);
                 Piece backendPiece = backendBoard.getPiece(pos);
                 
@@ -367,22 +356,21 @@ public class ChessBoard extends JPanel {
         boolean isWhite = piece.getColor().equals("white");
         
         switch (className) {
-    case "king":
-        return isWhite ? "♔" : "♚";
-    case "queen":
-        return isWhite ? "♕" : "♛";
-    case "rook":
-        return isWhite ? "♖" : "♜";
-    case "bishop":
-        return isWhite ? "♗" : "♝";
-    case "knight":
-        return isWhite ? "♘" : "♞";
-    case "pawn":
-        return isWhite ? "♙" : "♟";
-    default:
-        return "";
-}
-
+            case "king":
+                return isWhite ? "\u2654" : "\u265A";  // ♔ ♚
+            case "queen":
+                return isWhite ? "\u2655" : "\u265B";  // ♕ ♛
+            case "rook":
+                return isWhite ? "\u2656" : "\u265C";  // ♖ ♜
+            case "bishop":
+                return isWhite ? "\u2657" : "\u265D";  // ♗ ♝
+            case "knight":
+                return isWhite ? "\u2658" : "\u265E";  // ♘ ♞
+            case "pawn":
+                return isWhite ? "\u2659" : "\u265F";  // ♙ ♟
+            default:
+                return "";
+        }
     }
     
     /**
@@ -430,8 +418,8 @@ public class ChessBoard extends JPanel {
         backendBoard.setupClassic();
         
         // Reset GUI structures
-        board = new ChessPiece[8][8];
-        squares = new JButton[8][8];
+        board = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
+        squares = new JButton[BOARD_SIZE][BOARD_SIZE];
         moveHistory.clear();
         whiteCaptured.clear();
         blackCaptured.clear();
@@ -454,6 +442,15 @@ public class ChessBoard extends JPanel {
      * Saves the current game state to a file.
      */
     public void saveGame() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save Chess Game");
+        fileChooser.setSelectedFile(new File("chessgame.save"));
+        
+        int userSelection = fileChooser.showSaveDialog(this);
+        if (userSelection != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        
         try {
             // Create GameState with backend board
             GameState state = new GameState(
@@ -466,7 +463,7 @@ public class ChessBoard extends JPanel {
                 darkSquare
             );
             
-            FileOutputStream fileOut = new FileOutputStream("chessgame.save");
+            FileOutputStream fileOut = new FileOutputStream(fileChooser.getSelectedFile());
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(state);
             out.close();
@@ -489,8 +486,16 @@ public class ChessBoard extends JPanel {
      * Loads a saved game state from a file.
      */
     public void loadGame() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Load Chess Game");
+        
+        int userSelection = fileChooser.showOpenDialog(this);
+        if (userSelection != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        
         try {
-            FileInputStream fileIn = new FileInputStream("chessgame.save");
+            FileInputStream fileIn = new FileInputStream(fileChooser.getSelectedFile());
             ObjectInputStream in = new ObjectInputStream(fileIn);
             GameState state = (GameState) in.readObject();
             in.close();
@@ -523,8 +528,7 @@ public class ChessBoard extends JPanel {
                 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, 
-                "Error loading game: " + e.getMessage() + 
-                "\nMake sure a saved game exists.",
+                "Error loading game: " + e.getMessage(),
                 "Load Error",
                 JOptionPane.ERROR_MESSAGE);
         } catch (ClassNotFoundException e) {
@@ -543,9 +547,9 @@ public class ChessBoard extends JPanel {
         GameState.SerializablePieceData[][] boardData = state.getBoardState();
         
         // Create string array for Board.setupFromSave()
-        String[][] pieceData = new String[8][8];
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
+        String[][] pieceData = new String[BOARD_SIZE][BOARD_SIZE];
+        for (int r = 0; r < BOARD_SIZE; r++) {
+            for (int c = 0; c < BOARD_SIZE; c++) {
                 if (boardData[r][c] != null) {
                     pieceData[r][c] = boardData[r][c].type + "," + boardData[r][c].color;
                 }
@@ -617,8 +621,8 @@ public class ChessBoard extends JPanel {
         }
         
         // Update all squares with new colors
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
                 Color squareColor = (row + col) % 2 == 0 ? lightSquare : darkSquare;
                 squares[row][col].setBackground(squareColor);
             }
